@@ -48,6 +48,7 @@ def get_std_opt(model):
 def run():
     utils.set_logger(config.log_path)
 
+    # 使用 data_loader 中的 MTDataset，加载数据
     train_dataset = MTDataset(config.train_data_path)
     dev_dataset = MTDataset(config.dev_data_path)
     test_dataset = MTDataset(config.test_data_path)
