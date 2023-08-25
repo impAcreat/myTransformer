@@ -16,10 +16,16 @@ def subsequent_mask(size):
     # 设定subsequent_mask矩阵的shape
     attn_shape = (1, size, size)
 
-    # 生成一个右上角(不含主对角线)为全1，左下角(含主对角线)为全0的subsequent_mask矩阵
+    # np.triu(matrix, k): 以矩阵的主对角线向上平移 k 单位的对角线为分界，得到矩阵位于该对角线及以上的部分
+    # astype(data_type): 明确数据类型
+    # 
+    # 生成一个右上角(不含主对角线)为全1，左下角(含主对角线)为全0的subsequent_mask矩阵：
     subsequent_mask = np.triu(np.ones(attn_shape), k=1).astype('uint8')
 
-    # 返回一个右上角(不含主对角线)为全False，左下角(含主对角线)为全True的subsequent_mask矩阵
+    # torch.from_numpy(np.array): 利用 numpy 数组创建 tensor
+    #   注：== 0 起到了取反的作用
+    # 
+    # 返回一个右上角(不含主对角线)为全False，左下角(含主对角线)为全True的subsequent_mask矩阵：
     return torch.from_numpy(subsequent_mask) == 0
 
 
@@ -30,6 +36,7 @@ class Batch:
         self.trg_text = trg_text
         src = src.to(DEVICE)
         self.src = src
+        
         # 对于当前输入的句子非空部分进行判断成bool序列
         # 并在seq length前面增加一维，形成维度为 1×seq length 的矩阵
         self.src_mask = (src != pad).unsqueeze(-2)
@@ -57,12 +64,12 @@ class Batch:
 class MTDataset(Dataset):
     def __init__(self, data_path):
         self.out_en_sent, self.out_cn_sent = self.get_dataset(data_path, sort=True)
-        # Tokenizer 使用
+        # 加载 Tokenizer
         self.sp_eng = english_tokenizer_load()
         self.sp_chn = chinese_tokenizer_load()
-        self.PAD = self.sp_eng.pad_id()  # 0
-        self.BOS = self.sp_eng.bos_id()  # 2
-        self.EOS = self.sp_eng.eos_id()  # 3
+        self.PAD = self.sp_eng.pad_id()  # 0：padding：确定PAD值
+        self.BOS = self.sp_eng.bos_id()  # 2：begin of a sentence
+        self.EOS = self.sp_eng.eos_id()  # 3：end of a sentence
 
     @staticmethod
     def len_argsort(seq):
@@ -97,12 +104,16 @@ class MTDataset(Dataset):
         src_text = [x[0] for x in batch]
         tgt_text = [x[1] for x in batch]
 
+        # 使用 tokenizer：除句子分词结果外，添加开始符 BOS 以及结束符 EOS
+        # tokenize:
         src_tokens = [[self.BOS] + self.sp_eng.EncodeAsIds(sent) + [self.EOS] for sent in src_text]
         tgt_tokens = [[self.BOS] + self.sp_chn.EncodeAsIds(sent) + [self.EOS] for sent in tgt_text]
 
         # pad_sequence(sequences, batch_first=False, padding_value=0) 方法
         #   作用：由于神经网络训练要求 batch 内数据长度相同，故使用该方法将变长 tensor 填充到等长
         #   参数：被填充值 padding_value=0，填充对象sequences
+        # 
+        # padding:
         batch_input = pad_sequence([torch.LongTensor(np.array(l_)) for l_ in src_tokens],
                                    batch_first=True, padding_value=self.PAD)
         batch_target = pad_sequence([torch.LongTensor(np.array(l_)) for l_ in tgt_tokens],
