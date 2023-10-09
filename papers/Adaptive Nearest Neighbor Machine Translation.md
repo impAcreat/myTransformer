@@ -52,9 +52,7 @@
      **$$ p_{Meta}(k) = softmax(f_{Meta}([d;c])) $$**
 
   5. 做出预测：放弃原来kNN使用的超参数$\lambda$，由于Meta计算的值代表了一个kNN检索出的neighbor的可靠率，则该neighbor的value作为最终预测结果的概率为：
-   **$$
-   p(y_t|x,\widehat{y}_{<t}) = \sum_{k_i\in S}p_{Meta}(k_i)\cdot p_{k_iNN}(y_t|x,\widehat{y}_{<t})
-   $$**
+   **$$p(y_t|x,\widehat{y}_{<t}) = \sum_{k_i\in S}p_{Meta}(k_i)\cdot p_{k_iNN}(y_t|x,\widehat{y}_{<t})$$**
 
 
 原理：
