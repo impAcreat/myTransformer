@@ -70,15 +70,32 @@ datastore 生成公式如下：
 * 再用键值对的key间的距离作为权重，得到各个value的概率，公式如下：
   
 ![Alt text](pictures/image-21.png)
-* 改进：提高模型在没有缓存的示例时表现：对kNN概率和预训练模型新词的概率进行线性插值，公式如下：
+* 改进：提高模型在没有缓存的示例时表现：对kNN概率和预训练模型新词的概率进行线性插值，公式如下（$\lambda$：超参数）
   
 ![Alt text](pictures/image-22.png)
 
 ***
 ## 实验：
+### 跨领域适应性
 除了single language—pair translation和multilingual machine translation外，论文还进行了**Domain Adaption**的实验，实验结果表明：
 * 在不加入额外训练的情况下，训练好的模型+特定领域的datastore可以大幅提升模型表现
 
 ![Alt text](pictures/image-23.png)
 
+***
+
+### Softmax Temperature & the Number of Neighbors
+* softmax temperature在估计最邻近分布时使用，temperature的提高有利于将概率分配给多个neighbor，提高模型的多样性
+  
+<br>
+
+* 本文应用：
+  * temperature=1：BLEU显著降低；temperature=10/100 被证明是最优
+  * neighbors：当检索的neighbors数量较大时，模型性能并未提高，甚至有些下降，说明检索过多的neighbors会添加噪声，导致结果恶化
+  * 图示：
+  ![Alt text](pictures/image-24.png)
+
+<br>
+  
+* softmax temperature参考：https://zhuanlan.zhihu.com/p/504323465
 
