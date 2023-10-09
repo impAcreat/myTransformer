@@ -69,4 +69,4 @@
 
 #### 图示
 
-![Alt text](image.png)
+![Alt text](pictures/image-31.png)
